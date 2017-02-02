@@ -14,9 +14,9 @@ If you want to develop this script, please focus on tuning the parameters or dev
 def minimax_decision(depth, board, player=None, get_action=False, step=None): 
 	# apply the minimax and return its action (a matrix as the new board)
 	if get_action: 
-		print '------------------------------------------------\nGlobal step: %d\tSearch depth: %d\
+		print(('------------------------------------------------\nGlobal step: %d\tSearch depth: %d\
 				\nPlayer %s (%s) is calculating...' % (step, depth, player, 'lowercase' 
-				if player=='p1' else 'uppercase')
+				if player=='p1' else 'uppercase')))
 
 	global count_minimax, current_player, no_adjust
 	count_minimax += 1
@@ -58,16 +58,12 @@ def heuristic(board, current_player): # for player 1 (lowercase)
 	# get my resource positions
 	poss_me = {} # the key is the resource name, and the value is the position list
 	poss_me_list = []
-	poss_me[so_me[0]] = pos_list(so_me[0], board)
-	poss_me[so_me[1]] = pos_list(so_me[1], board)
-	poss_me[so_me[2]] = pos_list(so_me[2], board)
+	for so in so_me: poss_me[so] = pos_list(so, board)
 	for k in poss_me: poss_me_list += poss_me[k]
 	# get opponent's resource positions
 	poss_op = {}
 	poss_op_list = []
-	poss_op[so_op[0]] = pos_list(so_op[0], board)
-	poss_op[so_op[1]] = pos_list(so_op[1], board)
-	poss_op[so_op[2]] = pos_list(so_op[2], board)
+	for so in so_op: poss_op[so] = pos_list(so, board)
 	for k in poss_op: poss_op_list += poss_op[k]
 
 	# The heuristic value consists of the following 4 parts
@@ -122,7 +118,7 @@ def transmissions(board, p): # return all the possible states in this step
 	new_states = []
 	for so in (resources_player_1 if p=='p1' else resources_player_2):
 		for pos in pos_list(so, board): # find all new states for each resource
-			new_states += move_then_attack(pos, so, board)
+			new_states += move_then_attack(*pos, so, board)
 			new_states += attack_then_move(pos, so, board)
 
 	return remove_duplicates(new_states)
@@ -131,15 +127,13 @@ def attack_then_move(position, resource, board):
 	# return all possible states when attacking firstly (if there are reachable targets)
 	s_new_states = [] # new states for the resource
 	for state in attack(board, resource, position):
-		s_new_states += move_then_attack(position, resource, board, _attack=False)
+		s_new_states += move_then_attack(*position, resource, board, _attack=False)
 	
 	return s_new_states
 
-def move_then_attack(position, resource, board, _attack=True): 
+def move_then_attack(x, y, resource, board, _attack=True): 
 	# return all possible states for the resource when moving firstly
 	s_new_states = [] # new states for the resource
-	x = position[0]
-	y = position[1]
 	ss = 1 # step size
 	if resource == 'l' or resource == 'L': ss = 2
 	if x+ss >= 0 and x+ss <= 24:
@@ -177,13 +171,11 @@ def whole_attack_range(poss_op, board):
 	whole_attack_range = []
 	for so in poss_op:
 		for pos in poss_op[so]: 
-			whole_attack_range += attack_range(board, so, pos)
+			whole_attack_range += attack_range(board, so, *pos)
 	
 	return whole_attack_range
 
-def attack_range(board, resource, pos):# return the squares attackable by the resource
-	x = pos[0]
-	y = pos[1]
+def attack_range(board, resource, x, y):# return the squares attackable by the resource
 	if resource == 'l': 
 		squares_reachable = [[x+1, y], [x, y+1], [x, y-1]]
 	if resource == 'r':
@@ -208,7 +200,7 @@ def attack(board, resource, pos): # return all possible attacks from the move
 	opponent_resources = positions_all('p2' if resource.islower() else 'p1', board)
 	# find possible targets to attack
 	for p in opponent_resources:
-		if p in attack_range(board, resource, pos):
+		if p in attack_range(board, resource, *pos):
 			b_copy = copy.deepcopy(board)
 			b_copy[p[0]][p[1]] = ' ' # remove the opponent resource
 			sub_states.append(b_copy) # new possible transmissions
@@ -222,8 +214,8 @@ def positions_all(p, board):
 
 def pos_list(s, board): # find the position list of a type of resource in the board
 	poss = []
-	for x in xrange(25):
-		for y in xrange(25):
+	for x in range(25):
+		for y in range(25):
 			if board[x][y] == s: poss.append([x, y])
 
 	return poss
@@ -232,7 +224,7 @@ def init_board():
 	global resources_player_1, resources_player_2
 	resources_player_1 = ['s', 'l', 'r']
 	resources_player_2 = ['S', 'L', 'R']
-	board = [[' ' for r in xrange(25)] for c in xrange(25)] 
+	board = [[' ' for r in range(25)] for c in range(25)] 
 	board[2][5] = 'S'
 	board[2][8] = 'S'
 	board[2][12] = 'S'
@@ -260,33 +252,33 @@ def init_board():
 
 def print_board(b, step, init=False, depth=5):
 	if b==None: return
-	if init: print "\n------------------------------------------------\
-				\nGame starts... Search depth: %d" % depth
+	if init: print(("\n------------------------------------------------\
+				\nGame starts... Search depth: %d" % depth))
 	if not init: 
-		print '>>> Player %d (%s) has moved.' % (1 if step%2==1 else 2, 
-					'lowercase' if step%2==1 else 'uppercase')
-		print 'Total iterations on minimax_decision(): %d' % count_minimax
-	print '\n%s\n' % ('\n'.join('|%s|' % '|'.join(r) for r in b))
+		print(('>>> Player %d (%s) has moved.' % (1 if step%2==1 else 2, 
+					'lowercase' if step%2==1 else 'uppercase')))
+		print(('Total iterations on minimax_decision(): %d' % count_minimax))
+	print(('\n%s\n' % ('\n'.join('|%s|' % '|'.join(r) for r in b))))
 
 def check_win(b):
 	if len(positions_all('p1',b)) == 0 :
-		print 'Player 1 has won. Game ended.'
+		print('Player 1 has won. Game ended.')
 		exit()
 	if len(positions_all('p2',b)) == 0 :
-		print 'Player 2 has won. Game ended.'
+		print('Player 2 has won. Game ended.')
 		exit()
 
 def player_2_human(b, fired=False, moved=False):
 	global step
 	b_copy = copy.deepcopy(b)
-	action = raw_input("Enter your action by inputing one position to attack or two positions \
+	action = input("Enter your action by inputing one position to attack or two positions \
 to move a resource:Such as: [3,6] or [3,5],[6,7] or 'n' to skip (The board is represented as a matrix\
 , so the square in the top left corner is (0,0))\n")
 	if action=='n': return b
 	action = '[%s]' % action
 	try: a = eval(action)
 	except:
-		print 'Please check the format and try again.'
+		print('Please check the format and try again.')
 		return player_2_human(b)
 	fired = False
 	moved = False
@@ -296,11 +288,11 @@ to move a resource:Such as: [3,6] or [3,5],[6,7] or 'n' to skip (The board is re
 			if b_copy in transmissions(b, 'p2'): 
 				fired = True
 				print_board(b_copy, step)
-				if raw_input('Then move? (\'n\' to skip)') != 'n':
+				if input('Then move? (\'n\' to skip)')!= 'n':
 					return player_2_human(b_copy, fired=True)
 				else:  return b_copy
 			else:
-				if raw_input('Wrong input. Try again? (y/n)') == 'y': 
+				if input('Wrong input. Try again? (y/n)') == 'y': 
 					return player_2_human(b)
 	elif len(a) == 2 and not moved: # move
 		if b_copy[a[0][0]][a[0][1]].isupper(): 
@@ -310,13 +302,13 @@ to move a resource:Such as: [3,6] or [3,5],[6,7] or 'n' to skip (The board is re
 			if b_copy in transmissions(b, 'p2'): 
 				moved = True
 				print_board(b_copy, step)
-				if raw_input('Then attack? (\'n\' to skip)') != 'n':
+				if input('Then attack? (\'n\' to skip)') != 'n':
 					return player_2_human(b_copy, moved=True)
 				else:  return b_copy
 			else:
-				if raw_input('Wrong input. Try again? (y/n)') == 'y': 
+				if input('Wrong input. Try again? (y/n)') == 'y': 
 					return player_2_human(b)
-	else: print 'Wrong action!'
+	else: print('Wrong action!')
 
 
 
@@ -338,7 +330,7 @@ def main():
 	no_adjust = parsed.c
 	threshold = parsed.t*1e6
 	human = parsed.u
-	states_cache = ['' for i in xrange(10)] # check deadlock
+	states_cache = ['' for i in range(10)] # check deadlock
 	board_updated = init_board() # initiate the board
 	print_board(board_updated, 0, init=True, depth=parsed.d)
 	while (True):
@@ -379,7 +371,7 @@ def main():
 		
 		# 3. Terminate the game if reaching certain threshold 
 		if count_minimax >= threshold: 
-			print 'Seems not easy to reach the end of the game! Let\'s stop here.'
+			print('Seems not easy to reach the end of the game! Let\'s stop here.')
 			break
 
 
