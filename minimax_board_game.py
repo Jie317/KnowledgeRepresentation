@@ -14,9 +14,9 @@ If you want to develop this script, please focus on tuning the parameters or dev
 def minimax_decision(depth, board, player=None, get_action=False, step=None): 
 	# apply the minimax and return its action (a matrix as the new board)
 	if get_action: 
-		print(('------------------------------------------------\nGlobal step: %d\tSearch depth: %d\
+		print('------------------------------------------------\nGlobal step: %d\tSearch depth: %d\
 				\nPlayer %s (%s) is calculating...' % (step, depth, player, 'lowercase' 
-				if player=='p1' else 'uppercase')))
+				if player=='p1' else 'uppercase'))
 
 	global count_minimax, current_player, no_adjust
 	count_minimax += 1
@@ -29,7 +29,7 @@ def minimax_decision(depth, board, player=None, get_action=False, step=None):
 	if player == 'p1': # for maximizing player (player 1)
 		best_value = -1e500	
 		sub_states = transmissions(board, 'p1')
-		#if get_action: print 'Possible actions: %d' % len(sub_states)
+		#if get_action: print('Possible actions: %d' % len(sub_states))
 		for child in sub_states[::auto_adjust(sub_states) if not no_adjust else 1]:
 			value = minimax_decision(depth-1, child, 'p2')
 			if best_value < value:
@@ -41,7 +41,7 @@ def minimax_decision(depth, board, player=None, get_action=False, step=None):
 	else: # for minimizing player
 		best_value = +1e500
 		sub_states = transmissions(board, 'p2')
-		#if get_action: print 'Possible actions: %d' % len(sub_states)
+		#if get_action: print('Possible actions: %d' % len(sub_states))
 		for child in sub_states[::auto_adjust(sub_states) if not no_adjust else 1]:
 			value = minimax_decision(depth-1, child, 'p1')
 			if best_value > value:
@@ -252,13 +252,13 @@ def init_board():
 
 def print_board(b, step, init=False, depth=5):
 	if b==None: return
-	if init: print(("\n------------------------------------------------\
-				\nGame starts... Search depth: %d" % depth))
+	if init: print("\n------------------------------------------------\
+				\nGame starts... Search depth: %d" % depth)
 	if not init: 
-		print(('>>> Player %d (%s) has moved.' % (1 if step%2==1 else 2, 
-					'lowercase' if step%2==1 else 'uppercase')))
-		print(('Total iterations on minimax_decision(): %d' % count_minimax))
-	print(('\n%s\n' % ('\n'.join('|%s|' % '|'.join(r) for r in b))))
+		print('>>> Player %d (%s) has moved.' % (1 if step%2==1 else 2, 
+					'lowercase' if step%2==1 else 'uppercase'))
+		print('Total iterations on minimax_decision(): %d' % count_minimax)
+	print('\n%s\n' % ('\n'.join('|%s|' % '|'.join(r) for r in b)))
 
 def check_win(b):
 	if len(positions_all('p1',b)) == 0 :
